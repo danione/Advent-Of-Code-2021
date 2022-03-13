@@ -7,16 +7,18 @@ using namespace std;
 class Submarine{
   int depth_;
   int horizontalPos_;
+  int aim_;
 public:
-  Submarine(int depth = 0, int horizontalPos = 0)
-  : depth_(depth), horizontalPos_(horizontalPos){}
+  Submarine(int depth = 0, int horizontalPos = 0, int aim = 0)
+  : depth_(depth), horizontalPos_(horizontalPos), aim_(aim){}
 
   void up(int value){
-    depth_ += value;
+    aim_ += value;
   }
 
   void forward(int value){
     horizontalPos_ += value;
+    depth_ += (aim_ * value);
   }
 
   void executeCommand(string command, int value){
@@ -36,13 +38,10 @@ public:
       istringstream iss(line);
       string command;
       int value;
-      int horizontalPos = 0;
-      int depth = 0;
 
       if (!(iss >> command >> value)) { break; } // error
 
       executeCommand(command, value);
-
     }
   }
 
