@@ -49,7 +49,7 @@ void populateMap(int arr[][1000]){
   while(getline(inFile, value)){
     pair<int,int> startCoordinates = getPair(value.substr(0, value.find("->")));
     pair<int,int> endCoordinates = getPair(value.substr(value.find("->") + 3));
-    if(equals(startCoordinates, endCoordinates))
+    //if(equals(startCoordinates, endCoordinates))
       iterate(arr, startCoordinates, endCoordinates);
   }
 }
