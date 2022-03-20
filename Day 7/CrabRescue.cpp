@@ -3,20 +3,44 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <unordered_map>
 using namespace std;
+
+// int sumOfInts(int n){
+//   static unordered_map<int, int> numbers;
+//   if(!numbers[n]){
+//     if(n < 2){
+//       return n;
+//     }
+//     numbers[n] += n + sumOfInts(n - 1);
+//   }
+//   return numbers[n];
+// }
+
+int sumOfInts(int n){
+  static unordered_map<int, int> numbers;
+  if(!numbers[n])
+    numbers[n] = n*(1 + n)/2;
+    
+  return numbers[n];
+}
+
 
 // Iterative Approach
 int smallestFuelConsumpt(vector<int>& crabPos){
   int minSum = INT_MAX;
-  for(int i = 0; i < crabPos.size(); i++){
+  int max = *max_element(crabPos.begin(), crabPos.end());
+  for(int j = 0; j <= max; j++){
     int tempSum = 0;
-    for(int j = 0; j < crabPos.size(); j++){
-      tempSum += abs(crabPos[i] - crabPos[j]);
+    for(int i = 0; i < crabPos.size(); i++){
+      tempSum += sumOfInts(abs(crabPos[i] - j));
     }
+
     if(tempSum < minSum){
       minSum = tempSum;
     }
   }
+
   return minSum;
 }
 
@@ -42,7 +66,7 @@ void printVect(vector<int>& crabPos){
 int main(){
   vector<int> crabPos;
   populateCrabPos(crabPos);
-  printVect(crabPos);
+  // printVect(crabPos);
   cout << smallestFuelConsumpt(crabPos) << endl;
   return 0;
 }
