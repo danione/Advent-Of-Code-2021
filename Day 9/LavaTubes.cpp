@@ -3,58 +3,67 @@
 #include <vector>
 using namespace std;
 
-int checkBorderCases(int row, int column, vector<vector<char>>& input){
-  bool firstRow, firstColumn, lastRow, lastColumn;
+bool checkIfLowestValue(int row, int column, vector<vector<char>>& input){
+
+  bool firstRow = false, firstColumn = false, lastRow = false, lastColumn = false;
+  bool equals = false;
   char value = input[row][column];
 
   if(row == 0){
     firstRow = true;
   }
-  else if(row == input[row].size() - 1){
+  else if(row == input.size() - 1){
     lastRow = true;
   }
   if(column == 0){
     firstColumn = true;
-  } else if(column == input.size() - 1){
+  } else if(column == input[row].size() - 1){
     lastColumn = true;
   }
 
-  if(firstRow)
+  if(firstRow){
     if(input[row+1][column] < value)
       return 0;
-  if(firstColumn)
-    if(input[row][column+1] < value)
-      return 0;
-  if(lastRow)
+    else if (input[row+1][column] == value)
+      equals = true;
+  } else if(lastRow){
     if(input[row - 1][column] < value)
       return 0;
-  if(lastColumn)
+    else if (input[row - 1][column] == value)
+      equals = true;
+  } else{
+    if(input[row+1][column] < value || input[row-1][column] < value)
+      return 0;
+    else if (input[row+1][column] == value || input[row-1][column] == value)
+      equals = true;
+  }
+
+  if(firstColumn){
+    if(input[row][column + 1] < value)
+      return 0;
+  } else if(lastColumn){
     if(input[row][column - 1] < value)
       return 0;
-}
-
-bool checkIfLowestValue(int row, int column, vector<vector<char>>& input){
-
-  if(row == 0){
-
-  } else if(row == input[row].size() - 1){
-
+  } else{
+    if(input[row][column + 1] < value || input[row][column - 1] < value)
+      return 0;
   }
-
-  if()
-  char value = input[row][column];
-  if(input[row+1][column] < value || input[row][column+1] < value
-    || input[row-1][column] < value || input[row][column-1] < value)
-      return false;
-  return true;
+  if(equals)
+    return 0;
+  else
+    return 1;
 }
 
-void printInput(vector<vector<char>>& input){
+void checkVectorInput(vector<vector<char>>& input){
+  int sum = 0;
   for(int row = 0; row < input.size(); row++){
-    for(int column = 0; column < input[row].size(); column++)
-      cout << input[row][column] << ",";
-    cout << endl;
+    for(int column = 0; column < input[row].size(); column++){
+      if(checkIfLowestValue(row, column, input) == 1){
+        sum += (input[row][column] - '0') + 1;
+      }
+    }
   }
+  cout << sum << endl;
 }
 
 void handleInput(vector<vector<char>>& input){
@@ -74,6 +83,6 @@ void handleInput(vector<vector<char>>& input){
 int main(){
   vector<vector<char>> input;
   handleInput(input);
-  printInput(input);
+  checkVectorInput(input);
   return 0;
 }
