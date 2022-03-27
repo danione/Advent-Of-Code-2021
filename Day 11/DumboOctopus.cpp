@@ -9,10 +9,12 @@ class OctopusRadar{
   set<int> simulated;
   const int width = 10;
   int blinks;
+  int step;
 public:
 
   OctopusRadar(){
     blinks = 0;
+    step = 0;
     string value;
     ifstream infile("input.txt");
     int row = 0;
@@ -77,7 +79,7 @@ public:
       litUp(x + width*(y + 1));
   }
 
-  void sparkle(){
+  bool sparkle(){
     auto iterator = toSimulate.begin();
     while(iterator != toSimulate.end()){
       blinkAdjacent(*iterator);
@@ -86,11 +88,15 @@ public:
       iterator = toSimulate.begin();
     }
     iterator = simulated.begin();
+    bool synchronised = false;
+    if(simulated.size() == 100)
+      synchronised = true;
     while(iterator != simulated.end()){
       octopusR[*iterator] = 0;
       simulated.erase(iterator);
       iterator = simulated.begin();
     }
+    return synchronised;
   }
 
   void simulate(int steps){
@@ -101,6 +107,16 @@ public:
     }
   }
 
+  int simulateUntilSynchronised(){
+    while(true){
+      step++;
+      for(int j = 0; j < 100; j++)
+        litUp(j);
+      if (sparkle() == true)
+        return step;
+    }
+  }
+
   int getBlinks(){return blinks;}
 };
 
@@ -108,8 +124,6 @@ int main(){
   OctopusRadar* radar = new OctopusRadar();
   radar->print();
   cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
-  radar->simulate(100);
-  radar->print();
-  cout << radar->getBlinks() << endl;
+  cout << radar->simulateUntilSynchronised() << endl;
   return 0;
 }
