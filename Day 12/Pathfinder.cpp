@@ -11,6 +11,7 @@ class Pathfinder{
   string finish;
   unordered_map<string, vector<string>> vertex;
   vector<string> paths;
+  bool hasMax;
 public:
   Pathfinder(): start("start"), finish("end"){
     ifstream infile("input.txt");
@@ -39,29 +40,55 @@ public:
   }
 
   void mapIt(){
-    unordered_map<string, bool> visited;
+    unordered_map<string, short> visited;
 
     for(auto const &pair: vertex)
-        visited[pair.first] = false;
+        visited[pair.first] = 0;
 
-    traverse(start, visited, string());
+    short border = 2;
+    visited[start] = border;
+    for(auto& str: vertex[start])
+      traverse(str, visited, string(), border);
   }
 
-  void traverse(string val, unordered_map<string, bool>& visited, string path){
+  // void traverse(string val, unordered_map<string, bool>& visited, string path){
+  //
+  //   if(islower(val[0]))
+  //     visited[val] = true;
+  //
+  //   if(val == finish){
+  //     paths.push_back(path + ' ' + val);
+  //   } else{
+  //     for(auto const &vert: vertex[val]){
+  //       if(!visited[vert])
+  //         traverse(vert, visited, path + ' ' + val);
+  //     }
+  //   }
+  //
+  //   visited[val] = false;
+  // }
+
+  void traverse(string val, unordered_map<string, short>& visited, string path, short border){
 
     if(islower(val[0]))
-      visited[val] = true;
+      visited[val]++;
+
+    if(visited[val] == 2)
+      border--;
 
     if(val == finish){
       paths.push_back(path + ' ' + val);
     } else{
       for(auto const &vert: vertex[val]){
-        if(!visited[vert])
-          traverse(vert, visited, path + ' ' + val);
+        if(visited[vert] < border)
+          traverse(vert, visited, path + ' ' + val, border);
       }
     }
 
-    visited[val] = false;
+    if(islower(val[0]))
+      visited[val]--;
+    if(visited[val] == 2)
+      border++;
   }
 
   void printPaths(){
