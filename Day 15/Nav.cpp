@@ -2,6 +2,8 @@
 #include <fstream>
 #include <vector>
 #include <map>
+#include <queue>
+#include <set>
 using namespace std;
 
 struct Node{
@@ -9,9 +11,6 @@ struct Node{
   int cost;
 };
 
-struct Edge{
-  long long unsigned src, dest, weight;
-};
 
 class Graph{
     vector<Node> nodes;
@@ -73,33 +72,50 @@ class Graph{
       }
     }
 
+
+    void runDistanceAlgo(deque<Node>& que, vector<int>& distance){
+      set<long long unsigned> visited;
+
+      while(!que.empty()){
+        auto comp = [&](Node a, Node b)-> bool {
+          return distance[a.index] < distance[b.index];
+        };
+        auto nextEl = min_element(que.begin(), que.end(), comp);
+        long long unsigned next = nextEl->index;
+
+        que.erase(nextEl);
+        visited.insert(next);
+
+        long long unsigned min = UINT_MAX;
+        for(auto& connect: adjList[next]){
+          if(visited.find(connect.first.index) == visited.end()) {
+            int dist = distance[next] + connect.second;
+            if(dist < distance[connect.first.index])
+              distance[connect.first.index] = dist;
+          }
+        }
+      }
+      cout << distance[lRow*lRow - 1] << endl;
+    }
+
+
     void dijkstra(int start){
       vector<int> distance(nodes.size());
-      queue<Nodes> que;
+      deque<Node> que;
 
       if(start >= 0 && start < nodes.size()){
         distance[start] = 0;
-        que.push(node[start]);
+        que.push_back(nodes[start]);
       }
 
       for(int i = 0; i < nodes.size(); i++){
         if(i != start){
           distance[i] = INT_MAX;
-          que.push(node[i]);
+          que.push_back(nodes[i]);
         }
       }
 
-      while(!que.empty()){
-        Node next = que.front();
-        que.pop();
-
-        vector<Node> connections;
-        for(auto connect: adjList[next.index]){
-          
-        }
-
-      }
-
+      runDistanceAlgo(que, distance);
     }
 };
 
@@ -113,6 +129,7 @@ int main(){
 
   gr->init();
   gr->addExtraEdges();
-  gr->print();
+  gr->dijkstra(0);
+
   return 0;
 }
