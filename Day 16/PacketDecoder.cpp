@@ -4,55 +4,13 @@
 #include <string>
 #include <cstdlib>
 #include <vector>
+#include "Packet.h"
 using namespace std;
-
-class Packet{
-  bool lenTypeId;
-  unsigned int value;
-  int version;
-  int typeId;
-  bool literal;
-  unsigned int valueLen;
-public:
-  vector<Packet*> daughterPackets;
-  static int versions;
-
-  Packet(){
-    version = 0;
-    typeId = 0;
-    literal = false;
-    value = 0;
-    valueLen = 0;
-  }
-
-  void assignVersion(int newVersion){
-    version = newVersion;
-    versions += version;
-  }
-
-  int getVersion(){return version;}
-
-  void assignTypeId(int typeId){typeId = typeId;}
-
-  void setLiteral(bool val){literal = val;}
-
-  bool getLiteral(){return literal;}
-
-  void setValue(string val){if(!val.empty()) value = stoull(val, 0, 2);}
-
-  void setValueLen(int newLen){valueLen += newLen;}
-
-  int getValueLen(){return valueLen;}
-
-  void addPackets(Packet* packet){daughterPackets.push_back(packet);}
-};
-
-int Packet::versions = 0;
 
 class Decoder{
   unordered_map<char, string> decode;
   string decodedMsg;
-
+  Packet* firstPacket;
 public:
   Decoder(){
     decode = {{'0',"0000"}, {'1',"0001"}, {'2',"0010"}, {'3', "0011"},
@@ -61,12 +19,15 @@ public:
     {'C', "1100"}, {'D', "1101"}, {'E', "1110"}, {'F', "1111"}};
   }
 
+  Packet* getFirstPacket(){return firstPacket;}
+
   void init(){
     ifstream infile("input.txt");
     string input;
     getline(infile, input);
     for(unsigned int i = 0; i < input.length(); i++)
       decodedMsg+= decode[input[i]];
+    firstPacket = new Packet();
   }
 
   string normalExtraction(Packet* pack, int bits){
@@ -77,56 +38,77 @@ public:
     return val;
   }
 
+  void literalHandle(Packet* pack){
+    string val;
+    while(decodedMsg[0] == '1')
+      val += normalExtraction(pack, 3);
+    if(decodedMsg[0] == '0'){
+      val += normalExtraction(pack, 3);
+    }
+    if(val.empty()) return;
+    pack->setValue(val);
+  }
+
+  void operatorCount(Packet* pack, unsigned int length){
+    decodedMsg.erase(0, 12);
+    for(unsigned int i = 0; i < length; i++){
+      Packet* newP = new Packet();
+      decFunc(newP);
+      pack->addPackets(newP);
+    }
+  }
+
+  void operatorLen(Packet* pack, unsigned int& length){
+    decodedMsg.erase(0, 16);
+    while(length > 0 && decodedMsg.length() > 0){
+      Packet* newP = new Packet();
+      decFunc(newP);
+      pack->addPackets(newP);
+      length -= newP->getValueLen();
+    }
+  }
+
   void infoHandle(Packet* pack){
     if(decodedMsg.length() <= 0)
       return;
 
     if(pack->getLiteral()){
-      string val;
-      while(decodedMsg[0] == '1')
-        val += normalExtraction(pack, 3);
-      if(decodedMsg[0] == '0'){
-        val += normalExtraction(pack, 3);
-      }
-      if(val.empty()) return;
-      pack->setValue(val);
+      literalHandle(pack);
     } else{
+      if(decodedMsg.empty())
+        return;
+      unsigned int length;
       if(decodedMsg[0] == '1'){
-        if(decodedMsg.empty())
-          return;
-        long long unsigned length = stoull(decodedMsg.substr(1,11),0,2);
-        decodedMsg.erase(0, 12);
-        for(unsigned int i = 0; i < length; i++){
-          Packet* newP = decFunc();
-          pack->addPackets(newP);
-        }
+        try {length = stoull(decodedMsg.substr(1,11),0,2);} catch (...)
+        {decodedMsg.erase();}
+
+        operatorCount(pack, length);
       } else{
-        if(decodedMsg.empty())
-          return;
-        unsigned int length = stoull(decodedMsg.substr(1,15),0,2);
-        decodedMsg.erase(0, 16);
-        while(length > 0 && decodedMsg.length() > 0){
-          Packet* newP = decFunc();
-          pack->addPackets(newP);
-          length -= newP->getValueLen();
-        }
+        try {length = stoull(decodedMsg.substr(1,15),0,2);} catch (...)
+        {decodedMsg.erase();}
+
+        operatorLen(pack, length);
       }
     }
     cout << pack->versions << endl;
   }
 
-  Packet* decFunc(){
-    Packet* newP = new Packet();
+  void decFunc(Packet* newP){
     if(decodedMsg.length() > 0){
       packetAssign(newP);
       infoHandle(newP);
     }
-    return newP;
   }
 
   void packetAssign(Packet* pack){
-    int version = stoull(decodedMsg.substr(0,3), 0, 2);
-    int typeId = stoull(decodedMsg.substr(3,3), 0, 2);
+    int version;
+    int typeId;
+
+    try {
+      version = stoull(decodedMsg.substr(0,3), 0, 2);
+      typeId = stoull(decodedMsg.substr(3,3), 0, 2);
+    } catch (...) {decodedMsg.erase();}
+
     pack->assignVersion(version);
     pack->assignTypeId(typeId);
     if(typeId == 4)
@@ -140,8 +122,8 @@ public:
 int main(){
   Decoder* dec = new Decoder();
   dec->init();
-  dec->decFunc();
-
+  dec->decFunc(dec->getFirstPacket());
+  dec->eval();
   delete dec;
   return 0;
 }
