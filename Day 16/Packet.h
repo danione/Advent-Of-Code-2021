@@ -4,21 +4,23 @@ using namespace std;
 
 class Packet{
   bool lenTypeId;
-  unsigned int value;
+  long long value;
   int version;
   int typeId;
   bool literal;
   unsigned int valueLen;
-  vector<Packet*> daughterPackets;
 public:
   static int versions;
+  vector<Packet*> daughterPackets;
   Packet();
   void assignVersion(int);
   int getVersion(void);
   void assignTypeId(int);
+  int getTypeId(void);
   void setLiteral(bool);
   bool getLiteral(void);
   void setValue(string);
+  long long getValue(void);
   void setValueLen(int);
   int getValueLen(void);
   void addPackets(Packet*);

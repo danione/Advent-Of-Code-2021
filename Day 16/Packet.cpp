@@ -6,7 +6,7 @@ Packet::Packet(){
   typeId = 0;
   literal = false;
   value = 0;
-  valueLen = 0;
+  valueLen = 6;
 }
 
 void Packet::assignVersion(int newVersion){
@@ -16,13 +16,17 @@ void Packet::assignVersion(int newVersion){
 
 int Packet::getVersion(){return version;}
 
-void Packet::assignTypeId(int typeId){typeId = typeId;}
+void Packet::assignTypeId(int nTypeId){typeId = nTypeId;}
+
+int Packet::getTypeId(void){return typeId;}
 
 void Packet::setLiteral(bool val){literal = val;}
 
 bool Packet::getLiteral(){return literal;}
 
 void Packet::setValue(string val){if(!val.empty()) value = stoull(val, 0, 2);}
+
+long long Packet::getValue(){return value;}
 
 void Packet::setValueLen(int newLen){valueLen += newLen;}
 
