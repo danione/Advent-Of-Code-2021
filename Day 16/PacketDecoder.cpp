@@ -63,12 +63,9 @@ public:
     while(length > 0){
       Packet* newP = new Packet();
       decFunc(newP);
+      if(decodedMsg.size() == 0) return;
       pack->addPackets(newP);
       length -= newP->getValueLen();
-      if (length > 10000){
-        pack->
-      }
-
     }
   }
 
@@ -89,7 +86,6 @@ public:
       } else{
         try {length = stoull(decodedMsg.substr(1,15),0,2);} catch (...)
         {decodedMsg.erase();}
-        cout << length << endl;
 
         operatorLen(pack, length);
       }
@@ -125,16 +121,15 @@ public:
   }
 
   long long eval(Packet* packet){
-    if(packet->daughterPackets.size() < 0 || packet->getLiteral()){
+    if(packet->getLiteral()){
       cout << " Value = " << packet->getValue();
       return packet->getValue();
-
     }
 
     int typeId = packet->getTypeId();
     if(typeId == 0){
       long long sum = 0;
-      cout << "Sum(";
+      cout << " Sum(";
 
       for(auto& daughter : packet->daughterPackets) sum += eval(daughter);
       if(sum == 0 && packet->daughterPackets.size() == 1) return eval(packet->daughterPackets[0]);
@@ -142,7 +137,7 @@ public:
       return sum;
     } else if(typeId == 1){
       long long product = 1;
-      cout << "Product(";
+      cout << " Product(";
       for(auto& daughter : packet->daughterPackets) product *= eval(daughter);
       if(product == 1 && packet->daughterPackets.size() == 1) return eval(packet->daughterPackets[0]);
       cout << ") is " << product << endl;
@@ -150,7 +145,7 @@ public:
     }
     else if(typeId == 2){
       long long min = LLONG_MAX;
-      cout << "Min(";
+      cout << " Min(";
       for(auto& daughter : packet->daughterPackets){
         long long ev = eval(daughter);
         if(min > ev) min = ev;
@@ -162,7 +157,7 @@ public:
     }
     else if(typeId == 3){
       long long max = LLONG_MIN;
-      cout << "Max(";
+      cout << " Max(";
       for(auto& daughter : packet->daughterPackets){
         long long ev = eval(daughter);
         if(max < ev) max = ev;
@@ -172,35 +167,35 @@ public:
       return max;
     }
     else if(typeId == 5){
-      cout << "First Greater than last (";
+      cout << " First Greater than last (";
       bool greaterThan = eval(packet->daughterPackets[0]) > eval(packet->daughterPackets[1]);
       cout << ") is " << greaterThan << endl;
 
-      return (int)greaterThan;
+      return (long long)greaterThan;
     }
     else if(typeId == 6){
-      cout << "First less than last (";
+      cout << " First less than last (";
 
       bool lessThan = eval(packet->daughterPackets[0]) < eval(packet->daughterPackets[1]);
       cout << ") is " << lessThan << endl;
 
-      return (int)lessThan;
+      return (long long)lessThan;
     }
     else{
-      cout << "First equal to last (";
+      cout << " First equal to last (";
 
       bool equalTo = eval(packet->daughterPackets[0]) == eval(packet->daughterPackets[1]);
       cout << ") is " << equalTo << endl;
-      return equalTo;
+      return (long long)equalTo;
     }
   }
 };
 
 int main(){
   Decoder* dec = new Decoder();
-  dec->init();
-  dec->decFunc(dec->getFirstPacket());
-  cout << dec->eval(dec->getFirstPacket()) << endl;
+  // dec->init();
+  // dec->decFunc(dec->getFirstPacket());
+  // cout << dec->eval(dec->getFirstPacket()) << endl;
   delete dec;
   return 0;
 }
