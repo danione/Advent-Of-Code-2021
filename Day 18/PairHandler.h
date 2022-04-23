@@ -5,7 +5,6 @@ class PairHandler{
   PairTree* tree;
   std::stack<int> iPrevPair;
   std::stack<Node*> nodes;
-  int levels;
 public:
   PairHandler();
   void pairH(std::string&);

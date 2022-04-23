@@ -7,7 +7,6 @@ using namespace std;
 PairHandler::PairHandler(){
   tree = new PairTree();
   handleInput();
-  levels = 0;
 }
 
 void PairHandler::handleInput(){
@@ -18,7 +17,7 @@ void PairHandler::handleInput(){
       if(contains_pair(line)){
         analyseLine(line);
       } else{
-        tree->append(nodes.top(), levels);
+        tree->append(nodes.top());
         nodes.pop();
         break;
       }
@@ -55,18 +54,18 @@ void PairHandler::insertInStack(const string& pair){
     if(left != "a" && right != "a"){
       Node* leftVal = new Node((Node){.regular = true, .val = stoi(left,0,10)});
       Node* rightVal = new Node((Node){.regular = true, .val = stoi(right,0,10)});
-      Node* pairNode = new Node((Node){.regular = false, .leftVal = leftVal, .rightVal = rightVal, .level = levels});
+      Node* pairNode = new Node((Node){.regular = false, .leftVal = leftVal, .rightVal = rightVal});
       nodes.push(pairNode);
     } else if(right != "a"){
       Node* rightVal = new Node((Node){.regular = true, .val = stoi(right,0,10)});
-      Node* pairNode = new Node((Node){.regular = false, .leftVal = nodes.top(), .rightVal = rightVal, .level = levels});
+      Node* pairNode = new Node((Node){.regular = false, .leftVal = nodes.top(), .rightVal = rightVal});
+      nodes.pop();
       nodes.push(pairNode);
-      levels++;
     } else{
-      Node* leftVal = new Node((Node){.regular = true, .val = stoi(right,0,10)});
-      Node* pairNode = new Node((Node){.regular = false, .leftVal = leftVal, .rightVal = nodes.top(), .level = levels});
+      Node* leftVal = new Node((Node){.regular = true, .val = stoi(left,0,10)});
+      Node* pairNode = new Node((Node){.regular = false, .leftVal = leftVal, .rightVal = nodes.top()});
+      nodes.pop();
       nodes.push(pairNode);
-      levels++;
     }
   } catch (...) { cout << pair << endl;}
 }
@@ -76,9 +75,8 @@ void PairHandler::insertInTree(){
   nodes.pop();
   Node* leftVal = nodes.top();
   nodes.pop();
-  Node* pairNode = new Node((Node){.regular = false, .leftVal = leftVal, .rightVal = rightVal, .level = levels});
+  Node* pairNode = new Node((Node){.regular = false, .leftVal = leftVal, .rightVal = rightVal});
   nodes.push(pairNode);
-  levels++;
 }
 
 bool PairHandler::contains_number(const string &c){
