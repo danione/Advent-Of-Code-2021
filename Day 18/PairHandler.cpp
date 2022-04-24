@@ -4,24 +4,58 @@
 #include <stack>
 using namespace std;
 
-PairHandler::PairHandler(){
+PairHandler::PairHandler(bool part1){
   tree = new PairTree();
-  handleInput();
+  if(part1)
+    handleInput();
+  else
+    insertLines();
+}
+
+void PairHandler::runSimulation(){
+  for(int f = 0; f < lines.size() - 1; f++){
+    for(int n = f + 1; n < lines.size(); n++){
+      lineTransform(lines[f]);
+      lineTransform(lines[n]);
+      magnitudes.insert(displayMagnitude());
+      delete tree;
+      tree = new PairTree();
+      lineTransform(lines[n]);
+      lineTransform(lines[f]);
+      magnitudes.insert(displayMagnitude());
+      delete tree;
+      tree = new PairTree();
+    }
+  }
+  cout << *magnitudes.rbegin() << endl;
+}
+
+void PairHandler::insertLines(){
+  ifstream infile("input.txt");
+  string line;
+  while(getline(infile,line)){
+    lines.push_back(line);
+  }
+  runSimulation();
+}
+
+void PairHandler::lineTransform(string line){
+  while(line.length() > 0){
+    if(contains_pair(line)){
+      analyseLine(line);
+    } else{
+      tree->append(nodes.top());
+      nodes.pop();
+      break;
+    }
+  }
 }
 
 void PairHandler::handleInput(){
   ifstream infile("input.txt");
   string line;
   while(getline(infile,line)){
-    while(line.length() > 0){
-      if(contains_pair(line)){
-        analyseLine(line);
-      } else{
-        tree->append(nodes.top());
-        nodes.pop();
-        break;
-      }
-    }
+    lineTransform(line);
   }
   tree->printNode(tree->getRoot());
   cout << endl;
@@ -85,4 +119,8 @@ bool PairHandler::contains_number(const string &c){
 
 bool PairHandler::contains_pair(const string &c){
     return (c.find_first_of(",") != string::npos);
+}
+
+int PairHandler::displayMagnitude(){
+  return tree->calcMagnitude(tree->getRoot());
 }

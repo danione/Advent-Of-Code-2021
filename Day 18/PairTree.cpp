@@ -1,5 +1,6 @@
 #include "PairTree.h"
 #include <iostream>
+#include <cmath>
 using namespace std;
 
 PairTree::PairTree(){
@@ -8,14 +9,42 @@ PairTree::PairTree(){
   pathFound = false;
 }
 
+PairTree::~PairTree(){
+  delete root;
+}
+
+Node* findLeftVal(Node * node){
+  if(node->regular && node->val > 9)
+    return node;
+  else if(node->regular)
+    return NULL;
+
+  Node* found = findLeftVal(node->leftVal);
+  if(found != NULL) return found;
+  else return findLeftVal(node->rightVal);
+
+}
+
+void PairTree::split(Node* node){
+  cout << "Splitting..." <<endl;
+  node->regular = false;
+  node->leftVal = new Node((Node){.regular = true, .val = static_cast<int>(floor((double)node->val / 2))});
+  node->rightVal = new Node((Node){.regular = true, .val = static_cast<int>(ceil((double)node->val / 2))});
+  node->val = 0;
+  cout << "Split complete!" << endl;
+}
+
 void PairTree::reduce(){
-  // while(true){
+  while(true){
+    Node* node = findLeftVal(root);
     if(levels > 4){
       explode();
-    } else{
-      // break;
-    }
-  // }
+      levels = getLevels(root);
+    } else if(node != NULL){
+      split(node);
+      levels = getLevels(root);
+    } else break;
+  }
 }
 
 int PairTree::getLevels(Node* node) {
@@ -93,38 +122,20 @@ void PairTree::cleanup(){
   path.pop();
   Node* parent = path.top();
   path.pop();
-  Node* grandparent = path.top();
 
-  if(parent->leftVal == current){
-    if(parent->rightVal->regular) parent->leftVal = new Node({.regular = true, .val = 0});
-    else{
-      if(grandparent->leftVal == parent){
-        grandparent->leftVal = parent->rightVal;
-      } else{
-        grandparent->rightVal = parent->rightVal;
-      }
-      delete parent;
-    }
-  } else{
-    if(parent->leftVal->regular)
-      parent->rightVal = new Node({.regular = true, .val = 0});
-    else{
-      if(grandparent->leftVal == parent){
-        grandparent->leftVal = parent->leftVal;
-      } else{
-        grandparent->rightVal = parent->leftVal;
-      }
-      delete parent;
-    }
-  }
-  delete current->leftVal;
-  delete current->rightVal;
-  delete current;
+  if(parent->leftVal == current) parent->leftVal = new Node({.regular = true, .val = 0});
+  else parent->rightVal = new Node({.regular = true, .val = 0});
+
   pathFound = false;
-  path.empty();
+
+  while(!path.empty())
+    path.pop();
+
+  delete current;
 }
 
 void PairTree::explode(){
+  cout << "Exploding..." << endl;
   leftmost(root, 1);
   Node* saught = path.top();
   Node* nearestLeft = nearest(true);
@@ -163,3 +174,9 @@ void PairTree::printNode(Node* node){
 }
 
 Node* PairTree::getRoot(){return root;}
+
+long long PairTree::calcMagnitude(Node* node){
+  if(node->regular)
+    return node->val;
+  return 3*calcMagnitude(node->leftVal) + 2*calcMagnitude(node->rightVal);
+}
